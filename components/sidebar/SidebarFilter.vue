@@ -48,7 +48,7 @@
                         :close-on-content-click="false"
                         :nudge-width="200"
                      >
-                        <template v-slot:activator="{ on }">
+                        <template #activator="{ on }">
                            <v-text-field
                               v-model="dateRange"
                               label="Rango de Fechas"
@@ -56,8 +56,8 @@
                               readonly
                               clearable
                               outlined
-                              v-on="on"
                               color="#68c6e8"
+                              v-on="on"
                            ></v-text-field>
                         </template>
                         <v-date-picker
@@ -86,14 +86,15 @@
 
 
 <script>
-import { mapGetters, mapState } from 'vuex'
+import { mapGetters, mapState, mapActions } from 'vuex'
+
 
 export default {
+
+   // eslint-disable-next-line vue/require-prop-types
    props: ['drawer'],
    data() {
       return {
-         overlay: false,
-         loading: false,
          startDateMenu: false,
          endDateMenu: false,
          dateRange: [],
@@ -145,6 +146,8 @@ export default {
     },
    },
    methods: {
+      ...mapActions(['setLoading']),
+
       toggleDrawer() {
          this.$emit('toggleDrawer')
        },
@@ -158,12 +161,17 @@ export default {
       },
       async search() {
          try {
+            this.setLoading(true);
             await this.$store.dispatch('searchData')
-            console.log('Buscando...!')
+
          } catch (error) {
+            // eslint-disable-next-line no-console
             console.error('Error al obtener datos:', error)
          } finally {
-            this.loading=false
+
+            setTimeout(() => {
+               this.setLoading(false);
+            }, 2000)
          }
       }
    }

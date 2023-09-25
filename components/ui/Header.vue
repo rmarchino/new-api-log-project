@@ -11,16 +11,14 @@
       src="https://ari-s3bucket.s3.amazonaws.com/assets/logo/arisale_logotipo.png"
       ></v-img>
     </v-list-item-avatar>
-    <template v-slot:extension>
-      <v-tabs align-with-title>
+    <template v-if="isSearchDataComplete" #extension>
+      <v-tabs v-model="selectedTab" align-with-title @change="searchRefresh" >
         <v-tab v-for="(tab, index) in tabs" :key="index" class="container-tabs">
           <h2 class="card-tabs">{{ tab.name }}</h2>
         </v-tab> 
       </v-tabs>
       <v-car class="card-actualizar">
-        <v-btn
-          :loading="loadingButton"
-        >
+        <v-btn @click="searchRefresh">
           Actualizar
           <v-icon>mdi-history</v-icon>
         </v-btn>
@@ -32,8 +30,10 @@
 
 
 <script>
+import { mapGetters, mapState, mapActions } from 'vuex'
 
   export default {
+    // eslint-disable-next-line vue/require-prop-types
     props: ['drawer', 'overlay'],
 
     data() {
@@ -49,15 +49,53 @@
             name: 'Web Services'
           }
         ],
-        loadingButton: false,
-        group: null,
+        loading: false,
       }
     },
+    computed: {
+      ...mapGetters(['isSearchDataComplete', 'isLoading']),
+      ...mapState(['state']),
+
+      selectedTab: {
+        set(val) {
+          this.$store.commit('setSelectedTab', val);
+        },
+        get() {
+          return this.$store.state.selectedTab;
+        }
+      },
+    },
     methods: {
+      ...mapActions(['setLoading']),
+
+    // async search() {
+    //   try {
+    //     await this.$store.dispatch('searchData');
+    //   } catch (error) {
+    //     // eslint-disable-next-line no-console
+    //     console.error('Error al obtener datos:', error);
+    //   } finally {
+    //     this.loading = false;
+    //   }
+    // },
+    async searchRefresh() {
+      try {
+        this.setLoading(true);
+        await this.$store.dispatch('searchData');
+        
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error('Error al obtener datos:', error);
+      } finally {
+        setTimeout(() => {
+          this.setLoading(false);
+        }, 2000)
+      }
+    },
       toggleDrawer() {
         this.$emit('toggleDrawer')
       }
-    },
+    }
   }
 </script>
 

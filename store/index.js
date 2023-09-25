@@ -1,8 +1,8 @@
 // State de vuex: variables, data
 export const state = () => ({
     searchData: {
-      idCompany: 'e4b7fc5a39294c57b83dd175f158aff3',
-      idDevice: 'JAHC2101000654',
+      idCompany: '98b43c9172d84980abd7e46a672d5e32',
+      idDevice: 'S202D89F70120',
       endpoint: '',
       dateRange: [''],
     },
@@ -10,8 +10,9 @@ export const state = () => ({
     selectedTab: 2,
     afterId: null,
     beforeId: null,
-    perPage: 7,
+    perPage: 10,
     docsCount: null,
+    isLoading: false,
 });
   
 // Setters
@@ -54,6 +55,9 @@ export const mutations = {
     setBeforeId(state, beforeId) {
       state.beforeId = beforeId;
     },
+    setLoading(state, isLoading) {
+      state.isLoading = isLoading;
+    },
 };
   
 // Getters
@@ -64,8 +68,9 @@ export const getters = {
         !!state.searchData.idDevice &&
         !!state.searchData.dateRange[0] &&
         !!state.searchData.dateRange[1]
-      );
-    },
+        );
+      },
+      isLoading: (state) => state.isLoading,
 };
   
 // Logic
@@ -114,6 +119,10 @@ export const actions = {
         throw new Error('Todos los campos son obligatorios');
       }
     },
+    setLoading({ commit }, isLoading) {
+      commit('setLoading', isLoading);
+    },
+
     async nextPage({ state, dispatch }) {
       await dispatch('searchData', {
         afterId: state.afterId,
