@@ -52,15 +52,6 @@
           >
             <v-btn elevation="1" @click="previousPage">Previous</v-btn>
             <v-btn elevation="1" @click="nextPage">Next</v-btn>
-            <v-select
-              v-model="perPage"
-              :items="elementPagination"
-              label="Elementos pos página"
-              dense
-              solo
-              class="select-pagination"
-              @input="changePerPage"
-            ></v-select>
             <div class="total-doc">
               <p>Total de documentos: {{ docsCount }}</p>
             </div>
@@ -132,14 +123,7 @@ import LoadingVue from '~/components/loading/Loading.vue';
       ...mapGetters(['isSearchDataComplete', 'isLoading']),
       ...mapState(['items', 'state', 'perPage', 'docsCount']),
 
-    perPage: {
-      get() {
-        return this.$store.state.perPage
-      },
-      set(val) {
-        this.$store.commit('setPerPage', val)
-      },
-    },
+    
     selectedTab: {
       set(val) {
         this.$store.commit('setSelectedTab', val)
@@ -150,16 +134,8 @@ import LoadingVue from '~/components/loading/Loading.vue';
     },
     },
     methods: {
-      ...mapActions(['nextPage', 'previousPage', 'changePerPage']),
-
-      async changePerPage() {
-        try {
-          await this.$store.dispatch('changePerPage', this.perPage)
-        } catch (error) {
-          // eslint-disable-next-line no-console
-          console.log('Error al cambiar la cantidad de elementos por página:', error)
-        }
-      },
+      ...mapActions(['nextPage', 'previousPage']),
+      
       toggleDrawer() {
         this.drawer = !this.drawer
         this.overlay = !this.overlay
@@ -189,7 +165,7 @@ import LoadingVue from '~/components/loading/Loading.vue';
   }
   .container-pagination {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     column-gap: 10px;
     justify-content: center;
     align-content: center;

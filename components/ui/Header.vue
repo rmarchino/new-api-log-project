@@ -10,19 +10,57 @@
       <v-img
       src="https://ari-s3bucket.s3.amazonaws.com/assets/logo/arisale_logotipo.png"
       ></v-img>
+
     </v-list-item-avatar>
     <template v-if="isSearchDataComplete" #extension>
-      <v-tabs v-model="selectedTab" align-with-title @change="searchRefresh" >
+      <v-tabs v-model="selectedTab" align-with-title  @change="searchRefresh">
         <v-tab v-for="(tab, index) in tabs" :key="index" class="container-tabs">
           <h2 class="card-tabs">{{ tab.name }}</h2>
-        </v-tab> 
+        </v-tab>
       </v-tabs>
-      <v-car class="card-actualizar">
-        <v-btn @click="searchRefresh">
+
+      <v-card-text>
+        <v-col
+          class="d-flex"
+          cols="12"
+          sm="6"
+        >
+          <v-btn @click="searchRefresh">
+            Actualizar
+            <v-icon>mdi-history</v-icon>
+          </v-btn>
+
+          <v-select
+            v-model="perPage"
+            :items="elementPagination"
+            label="Elementos pos página"
+            solo
+            class="select-pagination"
+            @input="changePerPage"
+          ></v-select>
+        </v-col>
+      </v-card-text>
+
+        <!-- <v-select
+            v-model="perPage"
+            :items="elementPagination"
+            label="Elementos pos página"
+            solo
+            class="select-pagination"
+            @input="changePerPage"
+        ></v-select> -->
+
+        <!-- <v-btn @click="searchRefresh">
           Actualizar
           <v-icon>mdi-history</v-icon>
-        </v-btn>
-      </v-car>
+        </v-btn> -->
+
+
+      <!-- <v-card>
+        <v-row class="card-actualizar">
+        </v-row>
+      </v-card> -->
+
     </template>
     </v-app-bar>
   </v-container>
@@ -50,11 +88,12 @@ import { mapGetters, mapState, mapActions } from 'vuex'
           }
         ],
         loading: false,
+        elementPagination: [10, 15, 25, 50, 100],
       }
     },
     computed: {
       ...mapGetters(['isSearchDataComplete', 'isLoading']),
-      ...mapState(['state']),
+      ...mapState(['state', 'perPage']),
 
       selectedTab: {
         set(val) {
@@ -64,20 +103,18 @@ import { mapGetters, mapState, mapActions } from 'vuex'
           return this.$store.state.selectedTab;
         }
       },
+      perPage: {
+        get() {
+          return this.$store.state.perPage
+        },
+        set(val) {
+          this.$store.commit('setPerPage', val)
+        },
+      }
     },
     methods: {
-      ...mapActions(['setLoading']),
+      ...mapActions(['setLoading', 'changePerPage']),
 
-    // async search() {
-    //   try {
-    //     await this.$store.dispatch('searchData');
-    //   } catch (error) {
-    //     // eslint-disable-next-line no-console
-    //     console.error('Error al obtener datos:', error);
-    //   } finally {
-    //     this.loading = false;
-    //   }
-    // },
     async searchRefresh() {
       try {
         this.setLoading(true);
@@ -92,6 +129,15 @@ import { mapGetters, mapState, mapActions } from 'vuex'
         }, 2000)
       }
     },
+
+    async changePerPage() {
+        try {
+          await this.$store.dispatch('changePerPage', this.perPage)
+        } catch (error) {
+          // eslint-disable-next-line no-console
+          console.log('Error al cambiar la cantidad de elementos por página:', error)
+        }
+      },
       toggleDrawer() {
         this.$emit('toggleDrawer')
       }
@@ -101,9 +147,15 @@ import { mapGetters, mapState, mapActions } from 'vuex'
 
 
 <style>
+  .container-tabs-grid {
+    display: grid;
+    grid-template-columns: repeat(2,1fr);
+    column-gap: 1rem;
+  }
   .container-tabs {
     border: 1px solid #c5d1db;
     margin-bottom: 5px;
+    display: grid;
   }
   .theme--dark.v-btn.v-btn--has-bg {
     background-color: #fff;

@@ -3,8 +3,8 @@ import colors from 'vuetify/es5/util/colors'
 export default {
   // Global page headers: https://go.nuxtjs.dev/config-head
   head: {
-    titleTemplate: '%s - new-api-log-project',
-    title: 'new-api-log-project',
+    titleTemplate: 'Arisale | Inicio',
+    title: 'Arisale | Inicio',
     htmlAttrs: {
       lang: 'en',
     },
@@ -14,7 +14,7 @@ export default {
       { hid: 'description', name: 'description', content: '' },
       { name: 'format-detection', content: 'telephone=no' },
     ],
-    link: [{ rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }],
+    link: [{ rel: 'icon', type: 'image/x-icon', href: 'https://media.licdn.com/dms/image/C4E0BAQGux6edGpgt7g/company-logo_200_200/0/1603969493414?e=2147483647&v=beta&t=5Na-z6ZWaO0IpI5ntLGeLf14ad1nO8utf95NhMiZXsA' }],
   },
 
   // Global CSS: https://go.nuxtjs.dev/config-css
