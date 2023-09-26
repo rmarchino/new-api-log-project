@@ -15,49 +15,57 @@
 
     <v-main>
       <v-container fluid>
-        <v-row v-if="isSearchDataComplete" >
-        <v-data-table
-          :items="items"
-          :headers="headers"
-          disable-pagination
-          hide-default-footer
-          class="tabla-datos"
+        <div
+          class="table-container"
+          @scroll="handleScroll"
+          style="max-height: 500px; overflow-y: auto;"
         >
-          <template #item="props">
-            <tr class="customer-row">
-              <td class="custom-cell">{{ props.item.id }}</td>
-              <td class="custom-cell">{{ props.item.issueDate | formatIssueDate }}</td>
-              <td class="custom-cell">{{ props.item.duration | formatDuration }}</td>
-              <td class="custom-cell">{{ props.item.establishmentName }}</td>
-              <td class="custom-cell">{{ props.item.endpoint }}</td>
-              <td class="custom-cell">{{ props.item.method }}</td>
-              <td class="custom-cell">{{ props.item.responseCode }}</td>
-              <td class="custom-cell">{{ props.item.versionName }}</td>
-              <td class="custom-cell">{{ props.item.startDate | formatStartDate }}</td>
-              <td class="custom-cell">{{ props.item.endDate | formatEndDate }}</td>
-              <td>
-                <SeeMoreVue 
-                  :item="props.item"
-                />
-              </td>
-            </tr>
-          </template>
-        </v-data-table>
+          <v-row v-if="isSearchDataComplete" >
+            <v-data-table
+              :items="items"
+              :headers="headers"
+              disable-pagination
+              hide-default-footer
+              class="tabla-datos"
+            >
+              <template #item="props">
+                <tr class="customer-row">
+                  <td class="custom-cell">{{ props.item.id }}</td>
+                  <td class="custom-cell">{{ props.item.issueDate | formatIssueDate }}</td>
+                  <td class="custom-cell">{{ props.item.duration | formatDuration }}</td>
+                  <td class="custom-cell">{{ props.item.establishmentName }}</td>
+                  <td class="custom-cell">{{ props.item.endpoint }}</td>
+                  <td class="custom-cell">{{ props.item.method }}</td>
+                  <td class="custom-cell">{{ props.item.responseCode }}</td>
+                  <td class="custom-cell">{{ props.item.versionName }}</td>
+                  <td class="custom-cell">{{ props.item.startDate | formatStartDate }}</td>
+                  <td class="custom-cell">{{ props.item.endDate | formatEndDate }}</td>
+                  <td>
+                    <SeeMoreVue 
+                      :item="props.item"
+                    />
+                  </td>
+                </tr>
+              </template>
+            </v-data-table>
 
-        <!-- pagination -->
-          <v-col
-            cols="12"
-            sm="6"
-            class="container-pagination"
-          >
-            <v-btn elevation="1" @click="previousPage">Previous</v-btn>
-            <v-btn elevation="1" @click="nextPage">Next</v-btn>
-          </v-col>
-          
-        </v-row>
+          <!-- pagination -->
+            <!-- <v-col
+              cols="12"
+              sm="6"
+              class="container-pagination"
+            >
+              <v-btn elevation="1" @click="previousPage">Previous</v-btn>
+              <v-btn elevation="1" @click="nextPage">Next</v-btn>
+            </v-col> -->
+
+            <div ref="scrollObserver"></div>
+
+          </v-row>
+        </div>
       </v-container>
     </v-main>
-      <LoadingVue :loading="isLoading"/>
+      <LoadingVue :loading="isLoading" />
     </v-app>
 </template>
 
@@ -117,7 +125,7 @@ import LoadingVue from '~/components/loading/Loading.vue';
         { text: 'Actions', value: '' },
       ],
         drawer: false,
-
+        debounceTimeout: null,
       }
     },
     computed: {
@@ -136,7 +144,37 @@ import LoadingVue from '~/components/loading/Loading.vue';
     },
     methods: {
       ...mapActions(['nextPage', 'previousPage']),
-      
+
+      handleScroll() {
+        clearTimeout(this.debounceTimeout);
+
+        if (!this.isLoading) {
+          const container = this.$el.querySelector('.table-container');
+          const scrollObserver = this.$refs.scrollObserver;
+        
+          if (
+            container.scrollTop + container.clientHeight >=
+            scrollObserver.offsetTop
+          ) {
+            // Cuando el elemento de referencia es visible y no se está cargando, mostrar loading y cargar más datos
+            this.$store.dispatch('setLoading', true);
+            this.loadMoreData();
+          }
+        }
+
+        // Reiniciar el debounce después de manejar el evento de scroll
+        this.debounceTimeout = setTimeout(() => {}, 500); // Espera 2 segundos
+      },
+
+      loadMoreData() {
+        if (!this.isLoading) {
+          // Evitar la carga múltiple mientras se está cargando
+          this.nextPage().then(() => {
+            // Después de cargar los datos, ocultar el loading
+            this.$store.dispatch('setLoading', false);
+          });
+        }
+      },
 
       toggleDrawer() {
         this.drawer = !this.drawer
