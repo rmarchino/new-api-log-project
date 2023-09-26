@@ -5,63 +5,44 @@
       absolute
       class="white"
     >
-    <v-app-bar-nav-icon class="menu-icon" @click="toggleDrawer" ></v-app-bar-nav-icon>
-    <v-list-item-avatar width="120" height="90">
-      <v-img
-      src="https://ari-s3bucket.s3.amazonaws.com/assets/logo/arisale_logotipo.png"
-      ></v-img>
+      <v-app-bar-nav-icon class="menu-icon" @click="toggleDrawer" ></v-app-bar-nav-icon>
+      <v-list-item-avatar width="120" height="90">
+        <v-img src="https://ari-s3bucket.s3.amazonaws.com/assets/logo/arisale_logotipo.png"></v-img>
+      </v-list-item-avatar>
+      
+      <template v-if="isSearchDataComplete" #extension>
+        <v-tabs v-model="selectedTab" align-with-title @change="searchRefresh">
+          <v-tab v-for="(tab, index) in tabs" :key="index" class="container-tabs">
+            <h2 class="card-tabs">{{ tab.name }}</h2>
+          </v-tab>
 
-    </v-list-item-avatar>
-    <template v-if="isSearchDataComplete" #extension>
-      <v-tabs v-model="selectedTab" align-with-title  @change="searchRefresh">
-        <v-tab v-for="(tab, index) in tabs" :key="index" class="container-tabs">
-          <h2 class="card-tabs">{{ tab.name }}</h2>
-        </v-tab>
-      </v-tabs>
+          <v-spacer></v-spacer>
 
-      <v-card-text>
-        <v-col
-          class="d-flex"
-          cols="12"
-          sm="6"
-        >
-          <v-btn @click="searchRefresh">
-            Actualizar
-            <v-icon>mdi-history</v-icon>
+          <v-col
+            class="d-flex select-pagination"
+          >
+            <v-select
+              v-model="perPage"
+              :items="[10, 15, 25, 50, 100]"
+              color="#545d61"
+              label="Filtrar por cantidad de documentos"
+              @input="changePerPage"
+            ></v-select>
+          </v-col>
+
+          <v-btn class="card-button-actualizar" @click="searchRefresh" >
+            <span>Actualizar</span>
+            <v-icon class="icon-actualizar">mdi-history</v-icon>
           </v-btn>
 
-          <v-select
-            v-model="perPage"
-            :items="elementPagination"
-            label="Elementos pos página"
-            solo
-            class="select-pagination"
-            @input="changePerPage"
-          ></v-select>
-        </v-col>
-      </v-card-text>
+          <v-spacer></v-spacer>
 
-        <!-- <v-select
-            v-model="perPage"
-            :items="elementPagination"
-            label="Elementos pos página"
-            solo
-            class="select-pagination"
-            @input="changePerPage"
-        ></v-select> -->
-
-        <!-- <v-btn @click="searchRefresh">
-          Actualizar
-          <v-icon>mdi-history</v-icon>
-        </v-btn> -->
-
-
-      <!-- <v-card>
-        <v-row class="card-actualizar">
-        </v-row>
-      </v-card> -->
-
-    </template>
+          <div>
+            <p>Total: {{ docsCount }}</p>
+          </div>
+          <v-spacer></v-spacer>
+        </v-tabs>
+      </template>
     </v-app-bar>
   </v-container>
 </template>
@@ -88,12 +69,12 @@ import { mapGetters, mapState, mapActions } from 'vuex'
           }
         ],
         loading: false,
-        elementPagination: [10, 15, 25, 50, 100],
+        // elementPagination: [10, 15, 25, 50, 100],
       }
     },
     computed: {
       ...mapGetters(['isSearchDataComplete', 'isLoading']),
-      ...mapState(['state', 'perPage']),
+      ...mapState(['state', 'perPage', 'docsCount']),
 
       selectedTab: {
         set(val) {
@@ -147,15 +128,9 @@ import { mapGetters, mapState, mapActions } from 'vuex'
 
 
 <style>
-  .container-tabs-grid {
-    display: grid;
-    grid-template-columns: repeat(2,1fr);
-    column-gap: 1rem;
-  }
   .container-tabs {
     border: 1px solid #c5d1db;
-    margin-bottom: 5px;
-    display: grid;
+    margin-bottom: 8px;
   }
   .theme--dark.v-btn.v-btn--has-bg {
     background-color: #fff;
@@ -174,5 +149,22 @@ import { mapGetters, mapState, mapActions } from 'vuex'
   }
   .v-tabs-slider {
     color: #68c6e8;
+  }
+
+  .v-select__selection--comma {
+    color: #545d61;
+  }
+
+  /***Tabs actualizar and seleccionar */
+  .v-btn__content {
+    text-transform: capitalize;
+  }
+  .icon-actualizar {
+    font-size: 0.875rem !important;
+  }
+
+  .card-button-actualizar {
+    border: 1px solid #c5d1db;
+    padding: 10px;
   }
 </style>

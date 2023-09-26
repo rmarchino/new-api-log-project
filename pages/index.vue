@@ -16,33 +16,33 @@
     <v-main>
       <v-container fluid>
         <v-row v-if="isSearchDataComplete" >
-          <v-data-table
-            :items="items"
-            :headers="headers"
-            disable-pagination
-            hide-default-footer
-            class="tabla-datos"
-          >
-            <template #item="props">
-              <tr class="customer-row">
-                <td class="custom-cell">{{ props.item.id }}</td>
-                <td class="custom-cell">{{ props.item.issueDate | formatIssueDate }}</td>
-                <td class="custom-cell">{{ props.item.duration | formatDuration }}</td>
-                <td class="custom-cell">{{ props.item.establishmentName }}</td>
-                <td class="custom-cell">{{ props.item.endpoint }}</td>
-                <td class="custom-cell">{{ props.item.method }}</td>
-                <td class="custom-cell">{{ props.item.responseCode }}</td>
-                <td class="custom-cell">{{ props.item.versionName }}</td>
-                <td class="custom-cell">{{ props.item.startDate | formatStartDate }}</td>
-                <td class="custom-cell">{{ props.item.endDate | formatEndDate }}</td>
-                <td>
-                  <SeeMoreVue 
-                    :item="props.item"
-                  />
-                </td>
-              </tr>
-            </template>
-          </v-data-table>
+        <v-data-table
+          :items="items"
+          :headers="headers"
+          disable-pagination
+          hide-default-footer
+          class="tabla-datos"
+        >
+          <template #item="props">
+            <tr class="customer-row">
+              <td class="custom-cell">{{ props.item.id }}</td>
+              <td class="custom-cell">{{ props.item.issueDate | formatIssueDate }}</td>
+              <td class="custom-cell">{{ props.item.duration | formatDuration }}</td>
+              <td class="custom-cell">{{ props.item.establishmentName }}</td>
+              <td class="custom-cell">{{ props.item.endpoint }}</td>
+              <td class="custom-cell">{{ props.item.method }}</td>
+              <td class="custom-cell">{{ props.item.responseCode }}</td>
+              <td class="custom-cell">{{ props.item.versionName }}</td>
+              <td class="custom-cell">{{ props.item.startDate | formatStartDate }}</td>
+              <td class="custom-cell">{{ props.item.endDate | formatEndDate }}</td>
+              <td>
+                <SeeMoreVue 
+                  :item="props.item"
+                />
+              </td>
+            </tr>
+          </template>
+        </v-data-table>
 
         <!-- pagination -->
           <v-col
@@ -52,10 +52,8 @@
           >
             <v-btn elevation="1" @click="previousPage">Previous</v-btn>
             <v-btn elevation="1" @click="nextPage">Next</v-btn>
-            <div class="total-doc">
-              <p>Total de documentos: {{ docsCount }}</p>
-            </div>
           </v-col>
+          
         </v-row>
       </v-container>
     </v-main>
@@ -65,6 +63,8 @@
 
 
 <script>
+
+
 import { mapGetters, mapState, mapActions } from 'vuex'
 import { format } from 'date-fns';
 
@@ -72,6 +72,7 @@ import SeeMoreVue from '~/components/SeeMoreTab/SeeMore.vue';
 import SidebarFilter from '~/components/sidebar/SidebarFilter.vue';
 import HeaderTabsVue from '~/components/ui/Header.vue';
 import LoadingVue from '~/components/loading/Loading.vue';
+
 
 
   export default {
@@ -116,12 +117,12 @@ import LoadingVue from '~/components/loading/Loading.vue';
         { text: 'Actions', value: '' },
       ],
         drawer: false,
-        elementPagination: [10, 15, 25, 50, 100],
+
       }
     },
     computed: {
       ...mapGetters(['isSearchDataComplete', 'isLoading']),
-      ...mapState(['items', 'state', 'perPage', 'docsCount']),
+      ...mapState(['items', 'state', 'perPage']),
 
     
     selectedTab: {
@@ -136,6 +137,7 @@ import LoadingVue from '~/components/loading/Loading.vue';
     methods: {
       ...mapActions(['nextPage', 'previousPage']),
       
+
       toggleDrawer() {
         this.drawer = !this.drawer
         this.overlay = !this.overlay
