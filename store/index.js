@@ -1,8 +1,8 @@
 // State de vuex: variables, data
 export const state = () => ({
     searchData: {
-      idCompany: '98b43c9172d84980abd7e46a672d5e32',
-      idDevice: 'S202D89F70120',
+      idCompany: 'cf7c76076f214a728719d33ff1e1ccae',
+      idDevice: '21BPCD8H6682',
       endpoint: '',
       dateRange: [''],
     },
@@ -50,6 +50,7 @@ export const mutations = {
       }
     },
     setAfterId(state, afterId) {
+      // console.log('Setting afterId:', afterId);
       state.afterId = afterId;
     },
     setBeforeId(state, beforeId) {
@@ -77,7 +78,7 @@ export const getters = {
 export const actions = {
     async searchData({ state, commit, getters }, additionalParams) {
       const { idCompany, idDevice, dateRange, endpoint } = state.searchData;
-  
+
       commit('setItems');
   
       if (getters.isSearchDataComplete) {
@@ -110,6 +111,7 @@ export const actions = {
         });
   
         // console.log(resultado.data);
+        // console.log('setItems', resultado)
   
         commit('setDocsCount', resultado.docsCount);
         commit('setItems', resultado.data);
@@ -119,6 +121,7 @@ export const actions = {
         throw new Error('Todos los campos son obligatorios');
       }
     },
+
     setLoading({ commit }, isLoading) {
       commit('setLoading', isLoading);
     },
@@ -128,6 +131,7 @@ export const actions = {
         afterId: state.afterId,
       });
     },
+    
     async previousPage({ state, dispatch }) {
       await dispatch('searchData', {
         beforeId: state.beforeId,

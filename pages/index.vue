@@ -1,3 +1,4 @@
+<!-- eslint-disable vue/order-in-components -->
 <template>
     <v-app
         height="auto"
@@ -13,56 +14,49 @@
           @toggleDrawer="toggleDrawer"
         />
 
-    <v-main>
+    <v-main ref="mainContainer">
       <v-container fluid>
-        <div
-          class="table-container"
-          @scroll="handleScroll"
-          style="max-height: 500px; overflow-y: auto;"
-        >
-          <v-row v-if="isSearchDataComplete" >
-            <v-data-table
-              :items="items"
-              :headers="headers"
-              disable-pagination
-              hide-default-footer
-              class="tabla-datos"
-            >
-              <template #item="props">
-                <tr class="customer-row">
-                  <td class="custom-cell">{{ props.item.id }}</td>
-                  <td class="custom-cell">{{ props.item.issueDate | formatIssueDate }}</td>
-                  <td class="custom-cell">{{ props.item.duration | formatDuration }}</td>
-                  <td class="custom-cell">{{ props.item.establishmentName }}</td>
-                  <td class="custom-cell">{{ props.item.endpoint }}</td>
-                  <td class="custom-cell">{{ props.item.method }}</td>
-                  <td class="custom-cell">{{ props.item.responseCode }}</td>
-                  <td class="custom-cell">{{ props.item.versionName }}</td>
-                  <td class="custom-cell">{{ props.item.startDate | formatStartDate }}</td>
-                  <td class="custom-cell">{{ props.item.endDate | formatEndDate }}</td>
-                  <td>
-                    <SeeMoreVue 
-                      :item="props.item"
-                    />
-                  </td>
-                </tr>
-              </template>
-            </v-data-table>
+        <v-row v-if="isSearchDataComplete" >
+          <v-data-table
+            :items="items"
+            :headers="headers"
+            disable-pagination
+            hide-default-footer
+            class="tabla-datos"
+            @update:options="handleTableUpdate"
+          >
+            <template #item="props">
+              <tr class="customer-row">
+                <td class="custom-cell">{{ props.item.id }}</td>
+                <td class="custom-cell">{{ props.item.issueDate | formatIssueDate }}</td>
+                <td class="custom-cell">{{ props.item.duration | formatDuration }}</td>
+                <td class="custom-cell">{{ props.item.establishmentName }}</td>
+                <td class="custom-cell">{{ props.item.endpoint }}</td>
+                <td class="custom-cell">{{ props.item.method }}</td>
+                <td class="custom-cell">{{ props.item.responseCode }}</td>
+                <td class="custom-cell">{{ props.item.versionName }}</td>
+                <td class="custom-cell">{{ props.item.startDate | formatStartDate }}</td>
+                <td class="custom-cell">{{ props.item.endDate | formatEndDate }}</td>
+                <td>
+                  <SeeMoreVue 
+                    :item="props.item"
+                  />
+                </td>
+              </tr>
+            </template>
+          </v-data-table>
 
-          <!-- pagination -->
-            <!-- <v-col
-              cols="12"
-              sm="6"
-              class="container-pagination"
-            >
-              <v-btn elevation="1" @click="previousPage">Previous</v-btn>
-              <v-btn elevation="1" @click="nextPage">Next</v-btn>
-            </v-col> -->
-
-            <div ref="scrollObserver"></div>
-
-          </v-row>
-        </div>
+        <!-- pagination -->
+          <v-col
+            v-show="showPagination"
+            cols="12"
+            sm="6"
+            class="container-pagination"
+          >
+            <v-btn elevation="1" @click="previousPage">Previous</v-btn>
+            <v-btn elevation="1" @click="nextPage">Next</v-btn>
+          </v-col>
+        </v-row>
       </v-container>
     </v-main>
       <LoadingVue :loading="isLoading" />
@@ -73,8 +67,9 @@
 <script>
 
 
-import { mapGetters, mapState, mapActions } from 'vuex'
+import { mapGetters, mapState, mapActions } from 'vuex';
 import { format } from 'date-fns';
+import 'intersection-observer';
 
 import SeeMoreVue from '~/components/SeeMoreTab/SeeMore.vue';
 import SidebarFilter from '~/components/sidebar/SidebarFilter.vue';
@@ -125,7 +120,8 @@ import LoadingVue from '~/components/loading/Loading.vue';
         { text: 'Actions', value: '' },
       ],
         drawer: false,
-        debounceTimeout: null,
+        showPagination: false,
+        observer: null,
       }
     },
     computed: {
@@ -144,44 +140,49 @@ import LoadingVue from '~/components/loading/Loading.vue';
     },
     methods: {
       ...mapActions(['nextPage', 'previousPage']),
-
-      handleScroll() {
-        clearTimeout(this.debounceTimeout);
-
-        if (!this.isLoading) {
-          const container = this.$el.querySelector('.table-container');
-          const scrollObserver = this.$refs.scrollObserver;
-        
-          if (
-            container.scrollTop + container.clientHeight >=
-            scrollObserver.offsetTop
-          ) {
-            // Cuando el elemento de referencia es visible y no se está cargando, mostrar loading y cargar más datos
-            this.$store.dispatch('setLoading', true);
-            this.loadMoreData();
-          }
-        }
-
-        // Reiniciar el debounce después de manejar el evento de scroll
-        this.debounceTimeout = setTimeout(() => {}, 500); // Espera 2 segundos
-      },
-
-      loadMoreData() {
-        if (!this.isLoading) {
-          // Evitar la carga múltiple mientras se está cargando
-          this.nextPage().then(() => {
-            // Después de cargar los datos, ocultar el loading
-            this.$store.dispatch('setLoading', false);
-          });
-        }
-      },
-
+      
       toggleDrawer() {
         this.drawer = !this.drawer
         this.overlay = !this.overlay
-      }
-    }
-  }
+      },
+
+      handleTableUpdate(){
+        this.attachObserver();
+      },
+
+      attachObserver() {
+        const container = this.$refs.mainContainer;
+        if (container && container.$el) {
+          this.observer = new IntersectionObserver(this.handleIntersection, {
+            threshold: 0.9,
+          });
+          this.observer.observe(container.$el);
+        }
+        // this.$nextTick(() => {
+        // });
+      },
+
+      handleIntersection(entries) {
+        console.log('Intersection detected:', entries);
+
+        const entry = entries[0];
+        if (entry.isIntersecting ) {
+
+          console.log('Container is intersecting. Calling nextPage...');
+
+          // Si el contenedor es visible y no estás cargando datos, carga la siguiente página
+          this.nextPage();
+        }
+      },
+      
+  
+      beforeDestroy() {
+        if(this.observer){
+          this.observer.disconnect();
+        }
+      },
+    },
+  };
 </script>
 
 

@@ -356,7 +356,11 @@ h3 {
 /**Aplication **/
 .card-application {
   border: 0.25px solid #848d99;
+}
 
+span {
+  color: #545d61;
+  font-size: 0.875rem;
 }
 
 
