@@ -168,7 +168,6 @@ export default {
             // eslint-disable-next-line no-console
             console.error('Error al obtener datos:', error)
          } finally {
-
             setTimeout(() => {
                this.setLoading(false);
             }, 2000)

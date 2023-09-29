@@ -14,7 +14,7 @@
           @toggleDrawer="toggleDrawer"
         />
 
-    <v-main ref="mainContainer">
+    <v-main>
       <v-container fluid>
         <v-row v-if="isSearchDataComplete" >
           <v-data-table
@@ -23,7 +23,6 @@
             disable-pagination
             hide-default-footer
             class="tabla-datos"
-            @update:options="handleTableUpdate"
           >
             <template #item="props">
               <tr class="customer-row">
@@ -69,7 +68,6 @@
 
 import { mapGetters, mapState, mapActions } from 'vuex';
 import { format } from 'date-fns';
-import 'intersection-observer';
 
 import SeeMoreVue from '~/components/SeeMoreTab/SeeMore.vue';
 import SidebarFilter from '~/components/sidebar/SidebarFilter.vue';
@@ -121,7 +119,7 @@ import LoadingVue from '~/components/loading/Loading.vue';
       ],
         drawer: false,
         showPagination: false,
-        observer: null,
+        loadingMore: false,
       }
     },
     computed: {
@@ -129,59 +127,67 @@ import LoadingVue from '~/components/loading/Loading.vue';
       ...mapState(['items', 'state', 'perPage']),
 
     
-    selectedTab: {
-      set(val) {
-        this.$store.commit('setSelectedTab', val)
-      },
-      get() {
-        return this.$store.state.selectedTab
+      selectedTab: {
+        set(val) {
+          this.$store.commit('setSelectedTab', val)
+        },
+        get() {
+          return this.$store.state.selectedTab
+        },
       },
     },
+    
+    mounted(){
+      window.addEventListener('scroll', this.handleScroll);
     },
+    beforeDestroy(){
+      window.removeEventListener('scroll', this.handleScroll);
+    },
+
     methods: {
       ...mapActions(['nextPage', 'previousPage']),
+
+      handleScroll() {
+        // Lógica para detectar el final de la página
+        if (this.isAtBottom() && !this.loadingMore) {
+
+          // Evitar cargas adicionales si ya se están cargando datos
+          this.loadingMore = true;
+
+          // Lógica cuando se alcanza el final de la página
+          // eslint-disable-next-line no-console
+          console.log('¡Has llegado al final de la página!');
+          this.loadMoreData();
+
+        }
+      },
+
+      isAtBottom() {
+        // Lógica para verificar si has llegado al final de la página
+        return (
+          window.innerHeight + window.scrollY >= document.body.offsetHeight
+        );
+      },
+
+      async loadMoreData() {
+        try {
+          // Lógica para cargar más datos desde la API
+          await this.$store.dispatch('nextPage');
+
+          // Restablecer la bandera después de cargar los datos
+          this.loadingMore = false;
+          
+        } catch (error) {
+          // eslint-disable-next-line no-console
+          console.error('Error al cargar má datos', error);
+        }
+      },
       
       toggleDrawer() {
         this.drawer = !this.drawer
         this.overlay = !this.overlay
-      },
-
-      handleTableUpdate(){
-        this.attachObserver();
-      },
-
-      attachObserver() {
-        const container = this.$refs.mainContainer;
-        if (container && container.$el) {
-          this.observer = new IntersectionObserver(this.handleIntersection, {
-            threshold: 0.9,
-          });
-          this.observer.observe(container.$el);
-        }
-        // this.$nextTick(() => {
-        // });
-      },
-
-      handleIntersection(entries) {
-        console.log('Intersection detected:', entries);
-
-        const entry = entries[0];
-        if (entry.isIntersecting ) {
-
-          console.log('Container is intersecting. Calling nextPage...');
-
-          // Si el contenedor es visible y no estás cargando datos, carga la siguiente página
-          this.nextPage();
-        }
-      },
-      
-  
-      beforeDestroy() {
-        if(this.observer){
-          this.observer.disconnect();
-        }
-      },
-    },
+      }
+    }
   };
 </script>
 

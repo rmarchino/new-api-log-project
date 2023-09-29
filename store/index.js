@@ -49,6 +49,16 @@ export const mutations = {
         state.items = [];
       }
     },
+    addItems(state, newItems) {
+      if (Array.isArray(newItems)) {
+        const formatedItems = newItems.map((item) => ({
+          ...item,
+          startDate: item.startDate ? new Date(item.startDate) : '',
+          endDate: item.endDate ? new Date(item.endDate) : '',
+        }));
+        state.items = [...state.items, ...formatedItems];
+      }
+    },
     setAfterId(state, afterId) {
       // console.log('Setting afterId:', afterId);
       state.afterId = afterId;
@@ -126,10 +136,15 @@ export const actions = {
       commit('setLoading', isLoading);
     },
 
-    async nextPage({ state, dispatch }) {
+    async nextPage({ state, dispatch, commit }) {
+      // eslint-disable-next-line no-console
+      console.log('Calling nextPage action');
+      
       await dispatch('searchData', {
         afterId: state.afterId,
       });
+      // Después de cargar los nuevos datos, actualiza la lista de elementos
+      commit('addItems', state.items);
     },
     
     async previousPage({ state, dispatch }) {
@@ -137,6 +152,7 @@ export const actions = {
         beforeId: state.beforeId,
       });
     },
+
     async changePerPage({ commit, dispatch }, perPage) {
       commit('setPerPage', perPage);
       await dispatch('searchData');
