@@ -8,6 +8,7 @@ export const state = () => ({
       dateRange: [''],
     },
     items: [],
+    newItems: [],
     selectedTab: 2,
     afterId: null,
     beforeId: null,
@@ -42,31 +43,31 @@ export const mutations = {
     },
     setItems(state, items) {
       if (Array.isArray(items)) {
-        state.items = items.map((item) => ({
+        const formattedItems = items.map((item) => ({
           ...item,
           startDate: item.startDate ? new Date(item.startDate) : '',
           endDate: item.endDate ? new Date(item.endDate) : '',
         }));
+
+        state.items = formattedItems;
       } else {
         state.items = [];
       }
     },
 
     addItems(state, newItems) {
-      if (Array.isArray(newItems)) {
+      if (Array.isArray(newItems) && newItems.length > 0) {
         const formattedItems = newItems.map((item) => ({
           ...item,
           startDate: item.startDate ? new Date(item.startDate) : '',
           endDate: item.endDate ? new Date(item.endDate) : '',
         }));
-  
-        // Agregar nuevos elementos al final de la lista existente
+    
         state.items = [...state.items, ...formattedItems];
       }
     },
 
     setAfterId(state, afterId) {
-      // console.log('Setting afterId:', afterId);
       state.afterId = afterId;
     },
     setBeforeId(state, beforeId) {
@@ -129,9 +130,6 @@ export const actions = {
           },
         });
   
-        // console.log(resultado.data);
-        // console.log('setItems', resultado)
-  
         commit('setDocsCount', resultado.docsCount);
         commit('setItems', resultado.data);
         commit('setAfterId', resultado.afterId);
@@ -148,50 +146,21 @@ export const actions = {
     async nextPage({ state, commit, dispatch }) {
       try {
         commit('setLoadingMore', true);
-
-        // eslint-disable-next-line no-console
-        console.log('Before nextPage - afterId:', state.afterId);
   
         // Utiliza await para esperar a que se complete la acción de searchData
         await dispatch('searchData', {
           afterId: state.afterId
         });
-        commit('addItems', state.items);
 
-        // eslint-disable-next-line no-console
-        console.log('After nextPage - afterId:', state.afterId);
+        commit('addItems', state.newItems);
 
       } catch (error) {
-        // eslint-disable-next-line no-console
-        console.error('Error al obtener datos de la página', error);
+        throw new Error('Error al obtener datos de la página');
 
       } finally {
         commit('setLoadingMore', false);
       }
     },
-
-    // eslint-disable-next-line require-await
-    // async nextPage({ state, commit, dispatch }) {
-    //   try {
-    //     commit('setLoadingMore', true);
-  
-    //     // Simula un retraso 
-    //     setTimeout(async () => {
-
-    //       // Esperar a que se complete la acción de searchData
-    //       await dispatch('searchData', {
-    //         afterId: state.afterId,
-    //       });
-  
-    //       commit('addItems', state.items);
-    //     }, 1000);
-    //   } catch (error) {
-    //     // eslint-disable-next-line no-console
-    //     console.error('Error al obtener datos de la página', error);
-    //   } finally {
-    //     commit('setLoadingMore', false);
-    //   }
-    // },
 
     async previousPage({ state, dispatch }) {
       await dispatch('searchData', {

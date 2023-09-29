@@ -124,7 +124,7 @@ import LoadingVue from '~/components/loading/Loading.vue';
     },
     computed: {
       ...mapGetters(['isSearchDataComplete', 'isLoading']),
-      ...mapState(['items', 'state', 'perPage']),
+      ...mapState(['items', 'state', 'perPage', 'newItems']),
 
     
       selectedTab: {
@@ -172,19 +172,19 @@ import LoadingVue from '~/components/loading/Loading.vue';
       async loadMoreData() {
         try {
           this.loadingMore = true;
-
+        
           // Lógica para cargar más datos desde la API
           await this.$store.dispatch('nextPage');
 
-          // Utilizar la nueva mutación para agregar elementos en lugar de reemplazar
-          this.$store.commit('addItems', this.$store.state.items);
+          console.log('New Items:', this.$store.state.newItems);
+        
+          // Utilizar la nueva mutación para agregar elementos al final de la lista existente
+          this.$store.commit('addItems', this.$store.state.newItems.value);
 
-          // Restablecer la bandera después de cargar los datos
-          // this.loadingMore = false;
-          
+        
         } catch (error) {
           // eslint-disable-next-line no-console
-          console.error('Error al cargar má datos', error);
+          console.error('Error al cargar más datos', error);
         } finally {
           this.loadingMore = false;
         }
