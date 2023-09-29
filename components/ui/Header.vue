@@ -18,29 +18,29 @@
 
           <v-spacer></v-spacer>
 
-          <v-col
-            class="d-flex select-pagination"
-          >
-            <v-select
-              v-model="perPage"
-              :items="[10, 15, 25, 50, 100]"
-              color="#545d61"
-              label="Filtrar por cantidad de documentos"
-              @input="changePerPage"
-            ></v-select>
-          </v-col>
+          <div class="container-select-button-count">
+            <v-col
+              class="d-flex select-pagination"
+            >
+              <v-select
+                v-model="perPage"
+                :items="[10, 50, 100, 200, 300, 400]"
+                color="#545d61"
+                label="Filtrar por cantidad de documentos"
+                @input="changePerPage"
+              ></v-select>
+            </v-col>
 
-          <v-btn class="card-button-actualizar" @click="searchRefresh" >
-            <span>Actualizar</span>
-            <v-icon class="icon-actualizar">mdi-history</v-icon>
-          </v-btn>
+            <div>
+              <p>Total: {{ docsCount }}</p>
+            </div>
 
-          <v-spacer></v-spacer>
-
-          <div>
-            <p>Total: {{ docsCount }}</p>
+            <v-btn class="card-button-actualizar" @click="searchRefresh" >
+              <span>Actualizar</span>
+              <v-icon class="icon-actualizar">mdi-history</v-icon>
+            </v-btn>
           </div>
-          <v-spacer></v-spacer>
+
         </v-tabs>
       </template>
     </v-app-bar>
@@ -156,6 +156,15 @@ import { mapGetters, mapState, mapActions } from 'vuex'
   }
 
   /***Tabs actualizar and seleccionar */
+
+  .container-select-button-count{
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    column-gap: 5px;
+    padding: 0 10px;
+    width: 400px;
+  }
+
   .v-btn__content {
     text-transform: capitalize;
   }

@@ -52,13 +52,13 @@
             sm="6"
             class="container-pagination"
           >
-            <v-btn elevation="1" @click="previousPage">Previous</v-btn>
-            <v-btn elevation="1" @click="nextPage">Next</v-btn>
+            <v-btn elevation="1" :loading="loadingMore" @click="previousPage">Previous</v-btn>
+            <v-btn elevation="1" :loading="loadingMore" @click="nextPage">Next</v-btn>
           </v-col>
         </v-row>
       </v-container>
     </v-main>
-      <LoadingVue :loading="isLoading" />
+      <LoadingVue :loading="isLoading || loadingMore" />
     </v-app>
 </template>
 
@@ -138,10 +138,12 @@ import LoadingVue from '~/components/loading/Loading.vue';
     },
     
     mounted(){
-      window.addEventListener('scroll', this.handleScroll);
+      // eslint-disable-next-line no-undef
+      this.debouncedHandleScroll = _.debounce(this.handleScroll, 500)
+      window.addEventListener('scroll', this.debouncedHandleScroll);
     },
     beforeDestroy(){
-      window.removeEventListener('scroll', this.handleScroll);
+      window.removeEventListener('scroll', this.debouncedHandleScroll);
     },
 
     methods: {
@@ -149,14 +151,12 @@ import LoadingVue from '~/components/loading/Loading.vue';
 
       handleScroll() {
         // Lógica para detectar el final de la página
-        if (this.isAtBottom() && !this.loadingMore) {
+        if (this.isAtBottom() && !this.loadingMore && !this.isLoading) {
 
           // Evitar cargas adicionales si ya se están cargando datos
           this.loadingMore = true;
 
           // Lógica cuando se alcanza el final de la página
-          // eslint-disable-next-line no-console
-          console.log('¡Has llegado al final de la página!');
           this.loadMoreData();
 
         }
@@ -171,15 +171,22 @@ import LoadingVue from '~/components/loading/Loading.vue';
 
       async loadMoreData() {
         try {
+          this.loadingMore = true;
+
           // Lógica para cargar más datos desde la API
           await this.$store.dispatch('nextPage');
 
+          // Utilizar la nueva mutación para agregar elementos en lugar de reemplazar
+          this.$store.commit('addItems', this.$store.state.items);
+
           // Restablecer la bandera después de cargar los datos
-          this.loadingMore = false;
+          // this.loadingMore = false;
           
         } catch (error) {
           // eslint-disable-next-line no-console
           console.error('Error al cargar má datos', error);
+        } finally {
+          this.loadingMore = false;
         }
       },
       

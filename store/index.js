@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 // State de vuex: variables, data
 export const state = () => ({
     searchData: {
@@ -13,6 +14,7 @@ export const state = () => ({
     perPage: 10,
     docsCount: null,
     isLoading: false,
+    loadingMore: false,
 });
   
 // Setters
@@ -49,16 +51,20 @@ export const mutations = {
         state.items = [];
       }
     },
+
     addItems(state, newItems) {
       if (Array.isArray(newItems)) {
-        const formatedItems = newItems.map((item) => ({
+        const formattedItems = newItems.map((item) => ({
           ...item,
           startDate: item.startDate ? new Date(item.startDate) : '',
           endDate: item.endDate ? new Date(item.endDate) : '',
         }));
-        state.items = [...state.items, ...formatedItems];
+  
+        // Agregar nuevos elementos al final de la lista existente
+        state.items = [...state.items, ...formattedItems];
       }
     },
+
     setAfterId(state, afterId) {
       // console.log('Setting afterId:', afterId);
       state.afterId = afterId;
@@ -69,6 +75,9 @@ export const mutations = {
     setLoading(state, isLoading) {
       state.isLoading = isLoading;
     },
+    setLoadingMore(state, loadingMore)  {
+      state.loadingMore = loadingMore;
+    }
 };
   
 // Getters
@@ -136,17 +145,54 @@ export const actions = {
       commit('setLoading', isLoading);
     },
 
-    async nextPage({ state, dispatch, commit }) {
-      // eslint-disable-next-line no-console
-      console.log('Calling nextPage action');
-      
-      await dispatch('searchData', {
-        afterId: state.afterId,
-      });
-      // Después de cargar los nuevos datos, actualiza la lista de elementos
-      commit('addItems', state.items);
+    async nextPage({ state, commit, dispatch }) {
+      try {
+        commit('setLoadingMore', true);
+
+        // eslint-disable-next-line no-console
+        console.log('Before nextPage - afterId:', state.afterId);
+  
+        // Utiliza await para esperar a que se complete la acción de searchData
+        await dispatch('searchData', {
+          afterId: state.afterId
+        });
+        commit('addItems', state.items);
+
+        // eslint-disable-next-line no-console
+        console.log('After nextPage - afterId:', state.afterId);
+
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error('Error al obtener datos de la página', error);
+
+      } finally {
+        commit('setLoadingMore', false);
+      }
     },
-    
+
+    // eslint-disable-next-line require-await
+    // async nextPage({ state, commit, dispatch }) {
+    //   try {
+    //     commit('setLoadingMore', true);
+  
+    //     // Simula un retraso 
+    //     setTimeout(async () => {
+
+    //       // Esperar a que se complete la acción de searchData
+    //       await dispatch('searchData', {
+    //         afterId: state.afterId,
+    //       });
+  
+    //       commit('addItems', state.items);
+    //     }, 1000);
+    //   } catch (error) {
+    //     // eslint-disable-next-line no-console
+    //     console.error('Error al obtener datos de la página', error);
+    //   } finally {
+    //     commit('setLoadingMore', false);
+    //   }
+    // },
+
     async previousPage({ state, dispatch }) {
       await dispatch('searchData', {
         beforeId: state.beforeId,
